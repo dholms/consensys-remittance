@@ -47,9 +47,8 @@ contract Remittance{
         require(toRefund.amount > 0);
         require(msg.sender == toRefund.creator);
         require(block.number > toRefund.deadline);
-        msg.sender.transfer(toRefund.amount);
         delete transfers[keccak256(pass1,pass2)];
-
+        msg.sender.transfer(toRefund.amount);
         return true;
     }
 
@@ -58,12 +57,13 @@ contract Remittance{
     }
 
     function withdrawFunds(string pass1, string pass2) public returns(bool success){
-        Transfer memory toWithdraw = transfers[keccak256(pass1,pass2)];
+        bytes32 passhash = keccak256(pass1,pass2);
+        Transfer memory toWithdraw = transfers[passhash];
         require(toWithdraw.amount > 0);
+        require(msg.sender == toWithdraw.recipient);
         require(block.number <= toWithdraw.deadline);
+        delete transfers[passhash];
         toWithdraw.recipient.transfer(toWithdraw.amount);
-        delete transfers[keccak256(pass1,pass2)];
-
         return true;
     }
 
